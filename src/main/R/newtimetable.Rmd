@@ -1,6 +1,20 @@
 New timetable
 =============
 
+Transport Data Exchange (TDX) program
+-------------------------------------
+You can download current timetable (and traffic) from [TDX](https://tdx.131500.com.au/). Registration is required.
+
+General Transit Feed Specification (GTFS)
+-----------------------------------------
+GTFS contains several files saved as comma-delimited text and properly escaped i.e. [CSV](http://tools.ietf.org/html/rfc4180). File encoding should be UTF-8 and BOM is acceptable. GTFS is documented at [Google Developers web site](https://developers.google.com/transit/gtfs/reference)
+
+### BOM (byte-order-mark)
+If your imported data set has first column starting with 'X.' then the input file contains BOM. Fortunately, this was fixed in R 3.0:
+
+> readLines() and scan() (and hence read.table()) in a UTF-8 locale now discard a UTF-8 byte-order-mark (BOM). Such BOMs are allowed but not recommended by the Unicode Standard: however Microsoft applications can produce them and so they are sometimes found on websites.The encoding name "UTF-8-BOM" for a connection will ensure that a UTF-8 BOM is discarded.
+
+In older versions of R you need to rename the first column or remove BOM manually 
 ```{r}
-old.stops <- 
+make.names("\357\273\277stop_id")
 ```
