@@ -1,0 +1,6 @@
+# History files & workspace files
+.Rhistory
+.RData
+
+# GTFS data
+data
