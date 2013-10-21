@@ -1,4 +1,10 @@
-Sydney new public trasport timetable
+```{r setup, include=FALSE}
+#require(compiler)
+compiler::enableJIT(0)
+opts_chunk$set(cache=TRUE, message=FALSE, tidy=FALSE)
+```
+
+Sydney new public transport timetable
 ====================================
 
 Transport Data Exchange (TDX) program
@@ -7,14 +13,132 @@ You can download current timetable (and traffic) from [TDX](https://tdx.131500.c
 
 General Transit Feed Specification (GTFS)
 -----------------------------------------
-GTFS contains several files saved as comma-delimited text and properly escaped i.e. [CSV](http://tools.ietf.org/html/rfc4180). File encoding should be UTF-8 and BOM is acceptable. GTFS is documented at [Google Developers web site](https://developers.google.com/transit/gtfs/reference)
+GTFS contains several files saved as comma-delimited text and properly escaped i.e. [CSV](http://tools.ietf.org/html/rfc4180). File encoding should be UTF-8 and BOM is acceptable. The minimal feed consist of 6 files:
+
+File | Defines
+-----|--------
+agency.txt | One or more transit agencies that provide the data in this feed
+stops.txt | Individual locations where vehicles pick up or drop off passengers
+routes.txt | Transit routes. A route is a group of trips that are displayed to riders as a single service
+trips.txt | Trips for each route. A trip is a sequence of two or more stops that occurs at specific time
+stop_times.txt | Times that a vehicle arrives at and departs from individual stops for each trip
+calendar.txt | Dates for service IDs using a weekly schedule. Specify when service starts and ends, as well as days of the week where service is available
+
+General Transit Feed Specification (GTFS) is documented at [Google Developers web site](https://developers.google.com/transit/gtfs/reference).
 
 ### BOM (byte-order-mark)
-If your imported data set has first column starting with 'X.' then the input file contains BOM. Fortunately, this was fixed in R 3.0:
+If your imported data set has the first column beginning with 'X.' then the input file contains BOM. Fortunately, this was fixed in R 3.0:
 
 > readLines() and scan() (and hence read.table()) in a UTF-8 locale now discard a UTF-8 byte-order-mark (BOM). Such BOMs are allowed but not recommended by the Unicode Standard: however Microsoft applications can produce them and so they are sometimes found on websites.The encoding name "UTF-8-BOM" for a connection will ensure that a UTF-8 BOM is discarded.
 
-In older versions of R you need to rename the first column or remove BOM manually 
 ```{r}
 make.names("\357\273\277stop_id")
 ```
+
+In older versions of R you need to rename the first column or remove BOM manually 
+
+Extent of Greater Sydney public transport area
+----------------------------------------------
+GTFS dataset must have **stops.txt** file which contains stop location (WGS84), name and several other attributes. Let's read stops from the previous timetable:
+```{r}
+old.stops <- read.csv("../../../data/Oct2012/stops.txt")
+```
+
+```{r results='asis', echo=FALSE }
+old.stops$stop_code <- NULL
+old.stops$parent_station <- NULL
+old.stops$location_type <- NULL
+old.stops$wheelchair_boarding <- NULL
+
+kable(head(old.stops), "html")
+```
+
+and the new timetable:
+
+```{r}
+new.stops <- read.csv("../../../data/Oct2013/stops.txt")
+```
+
+```{r results='asis', echo=FALSE }
+new.stops$stop_code <- NULL
+new.stops$parent_station <- NULL
+new.stops$location_type <- NULL
+new.stops$wheelchair_boarding <- NULL
+
+kable(head(new.stops), "html")
+```
+
+The **sp** package has **gConvexHull** function which returns the smallest convex polygon that contains all subgeometries, in our case all transit stops.
+
+```{r}
+suppressMessages(library(sp))
+suppressMessages(library(rgeos))
+suppressMessages(library(ggplot2))
+suppressMessages(library(ggmap))
+```
+The first step is to convert lat/lon points into spatial object:
+```{r}
+old.sp <- old.stops[, c("stop_lat", "stop_lon")]
+coordinates(old.sp) <- ~ stop_lon + stop_lat # x, then y
+proj4string(old.sp) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # assing coordinate reference system
+
+new.sp <- new.stops[, c("stop_lat", "stop_lon")]
+coordinates(new.sp) <- ~ stop_lon + stop_lat
+proj4string(new.sp) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
+```
+and the compute convex hull for the old and new timetable
+```{r}
+old.stops.hull <- gConvexHull(old.sp)
+new.stops.hull <- gConvexHull(new.sp)
+
+polygons <- rbind(
+  data.frame(new.stops.hull@polygons[[1]]@Polygons[[1]]@coords, type = "new"), # str() is your friend
+  data.frame(old.stops.hull@polygons[[1]]@Polygons[[1]]@coords, type = "old")
+)
+```
+Apparently, public transport coverage remains unchanged under the new time table.
+```{r, fig.height=10, fig.width=10 }
+# get base map
+base <- with(polygons, get_map(paste(mean(y), mean(x), sep = " "), zoom = 7, color = "bw"))
+
+ggmap(base) + 
+  geom_path(data = polygons, aes(x, y, colour = type), size = 1) +
+  scale_color_manual(values = c("blue", "red")) +
+  geom_point(data = new.stops, aes(x = stop_lon, y = stop_lat), size = 0.5, colour = "black") + # transit stops in black
+  coord_map(xlim = c(149, 153), ylim = c(-31.5, -35.5)) +
+  ggtitle("Greater Sydney public transport area")
+```
+
+```{r}
+suppressMessages(library(rgdal))
+
+WGS84toUTMzone56 <- function (latlon) {
+  coordinates(latlon) <- ~ stop_lon + stop_lat
+  proj4string(latlon) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
+  utm <- as.data.frame(spTransform(latlon, CRS("+proj=utm +zone=56 ellps=WGS84")))
+  names(utm) <- c("utm_lon", "utm_lat")
+  utm
+}
+
+# add UTM coords 
+old.stops <- data.frame(old.stops, WGS84toUTMzone56(old.stops[, c("stop_lat", "stop_lon")]))
+new.stops <- data.frame(new.stops, WGS84toUTMzone56(new.stops[, c("stop_lat", "stop_lon")]))
+
+dist <- nearest.dist(old.stops[, c("utm_lon", "utm_lat")], new.stops[, c("utm_lon", "utm_lat")], delta = 1000) # max 1km
+dist <- data.frame(summary(as.dgCMatrix.spam(dist)))
+names(dist) <- c("old", "new", "distance")
+dist <- merge(dist, old.stops, by.x = c("old"), by.y = c(0), all.x = T)
+dist <- merge(dist, new.stops, by.x = c("new"), by.y = c(0), all.x = T, suffixes = c(".old",".new"))
+dist <- dist[, -c(1, 2, 8, 9, 14, 15)]
+
+x <- within(dist, {
+  same.id <- as.character(stop_id.old) == as.character(stop_id.new)
+  same.name <- as.character(stop_name.old) == as.character(stop_name.new)
+  same.position <- stop_lat.old == stop_lat.new & stop_lon.old == stop_lon.new
+})
+
+ddply(x, ~ same.id + same.name + same.position, nrow)
+
+```
+
+
