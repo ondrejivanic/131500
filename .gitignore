@@ -4,3 +4,6 @@
 
 # GTFS data
 data
+cache
+figure
+ggmapTemp.png
