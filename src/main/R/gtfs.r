@@ -1,6 +1,5 @@
-load.gtfs <- function(path) {
-  parse.gtfs.date <- function(d) strptime(d, "%Y%m%d")
-  
+gtfs.load <- function(path) {
+
   WGS84toUTMzone56 <- function (latlon) {
     coordinates(latlon) <- ~ stop_lon + stop_lat
     proj4string(latlon) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
@@ -8,26 +7,84 @@ load.gtfs <- function(path) {
     names(utm) <- c("lon", "lat")
     utm
   }
+  
+  read.gtfs.file <- function (name, ...) {
+    read.csv(file.path(path, name), na.strings = c("", "NA"))
+  }
 
   list(
     "agency" = read.csv(file.path(path, "agency.txt")),
     "calendar" = transform(
-      read.csv(file.path(path, "calendar.txt")),
-      start_date = parse.gtfs.date(start_date),
-      end_date = parse.gtfs.date(end_date)
+      read.gtfs.file("calendar.txt"),
+      start_date = ymd(start_date),
+      end_date = ymd(end_date)
     ),
     "calendar_dates" = transform(
-      read.csv(file.path(path, "calendar_dates.txt")),
-      date =  parse.gtfs.date(date)
+      read.gtfs.file("calendar_dates.txt"),
+      date =  ymd(date)
     ),
-    "routes" = read.csv(file.path(path, "routes.txt")),
-    "shapes" = read.csv(file.path(path, "shapes.txt")),
-    "stop_times" = read.csv(file.path(path, "stop_times.txt")),
+    "routes" = read.gtfs.file("routes.txt"),
+    "shapes" = read.gtfs.file("shapes.txt"),
+    "stop_times" = read.gtfs.file("stop_times.txt"),
     "stops" = transform(
-      read.csv(file.path(path, "stops.txt")),
+      read.gtfs.file("stops.txt"),
       utm = WGS84toUTMzone56(data.frame(stop_lat, stop_lon))
     ),
-    "trips" = read.csv(file.path(path, "trips.txt"))
+    "trips" = read.gtfs.file("trips.txt")
   )  
 }
 
+gtfs.bbox <- function(gtfs, type = c("bbox", "convex")) {
+  type <- match.arg(type)
+
+  points <- gtfs[["stops"]][, c("stop_lat", "stop_lon")]
+  coordinates(points) <- ~ stop_lon + stop_lat # x, then y
+  proj4string(points) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # assing coordinate reference system
+  box <- gConvexHull(points) # str() is your friend
+  
+  if(type == "bbox") {
+    box@bbox      
+  } else {
+    data.frame(box@polygons[[1]]@Polygons[[1]]@coords)
+  }
+}
+
+gtfs.trips <- function(gtfs, date = Sys.time()) {
+  d <- trunc(date, "days")
+
+  is.between <- function(x, a, b) { 
+    (x > a) & (b > x) 
+  }
+  
+  is.available <- function(data, date) {
+    data[[tolower(weekdays(date))]] == 1
+  }
+  
+  as.seconds <- function(t) {
+      t <- strsplit(as.character(t), ":")
+      sapply(t, function(y) sum(as.numeric(y) * c(3600, 60, 1)))
+  }
+  
+  calendar.dates <- gtfs[["calendar_dates"]]
+  calendar <- gtfs[["calendar"]]
+  trips <- gtfs[["trips"]]
+  stop.times <- gtfs[["stop_times"]]
+  
+  services <- setdiff(
+    union(
+      calendar.dates[calendar.dates$date == d & calendar.dates$exception_type == 1, c("service_id")],
+      calendar[is.available(calendar, date) & is.between(date, calendar$start_date, calendar$end_date), c("service_id")]
+    ),
+    calendar.dates[calendar.dates$date == d & calendar.dates$exception_type == 2, c("service_id")]
+  )
+  
+  t <- trips[trips$service_id %in% services, c("trip_id")]
+  
+  transform(
+    stop.times[stop.times$trip_id %in% t, ],
+    arrival_time =  d + as.seconds(arrival_time),
+    departure_time = d + as.seconds(departure_time),
+    pickup_type = factor(pickup_type),
+    drop_off_type = factor(drop_off_type)
+  )
+}
