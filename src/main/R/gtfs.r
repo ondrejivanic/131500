@@ -23,7 +23,14 @@ gtfs.load <- function(path) {
       read.gtfs.file("calendar_dates.txt"),
       date =  ymd(date)
     ),
-    "routes" = read.gtfs.file("routes.txt"),
+    "routes" = transform(
+      read.gtfs.file("routes.txt"),
+      route_type = factor(
+        route_type, 
+        levels = 0:7, 
+        labels = c("Tram", "Metro", "Train", "Bus", "Ferry", "Cable car", "Gondola", "Funicular")
+      )
+    ),
     "shapes" = read.gtfs.file("shapes.txt"),
     "stop_times" = read.gtfs.file("stop_times.txt"),
     "stops" = transform(
@@ -69,6 +76,7 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   calendar <- gtfs[["calendar"]]
   trips <- gtfs[["trips"]]
   stop.times <- gtfs[["stop_times"]]
+  routes <- gtfs[["routes"]]
   
   services <- setdiff(
     union(
@@ -79,12 +87,15 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   )
   
   t <- trips[trips$service_id %in% services, c("trip_id")]
+  r <- unique(trips[trips$service_id %in% services, c("trip_id", "route_id")])
+  r <- merge(r, routes[, c("route_id", "route_type")])[, c("trip_id", "route_type")]
   
-  transform(
-    stop.times[stop.times$trip_id %in% t, ],
+  ret <- transform(stop.times[stop.times$trip_id %in% t, ],
     arrival_time =  d + as.seconds(arrival_time),
     departure_time = d + as.seconds(departure_time),
     pickup_type = factor(pickup_type),
     drop_off_type = factor(drop_off_type)
   )
+
+  merge(ret, r)
 }
