@@ -32,7 +32,12 @@ gtfs.load <- function(path) {
       )
     ),
     "shapes" = read.gtfs.file("shapes.txt"),
-    "stop_times" = read.gtfs.file("stop_times.txt"),
+    "stop_times" = transform(
+      read.gtfs.file("stop_times.txt"),
+      stop_sequence = factor(stop_sequence),
+      pickup_type = factor(pickup_type),
+      drop_off_type = factor(drop_off_type)
+    ),
     "stops" = transform(
       read.gtfs.file("stops.txt"),
       utm = WGS84toUTMzone56(data.frame(stop_lat, stop_lon))
