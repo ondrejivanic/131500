@@ -60,7 +60,7 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   d <- trunc(date, "days")
 
   is.between <- function(x, a, b) { 
-    (x > a) & (b > x) 
+    (x >= a) & (b >= x) 
   }
   
   is.available <- function(data, date) {
@@ -88,7 +88,7 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   
   t <- trips[trips$service_id %in% services, c("trip_id")]
   r <- unique(trips[trips$service_id %in% services, c("trip_id", "route_id")])
-  r <- merge(r, routes[, c("route_id", "route_type")])[, c("trip_id", "route_type")]
+  r <- merge(r, routes[, c("route_id", "route_type")], all.x = T)[, c("trip_id", "route_type")]
   
   ret <- transform(stop.times[stop.times$trip_id %in% t, ],
     arrival_time =  d + as.seconds(arrival_time),
@@ -97,5 +97,9 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
     drop_off_type = factor(drop_off_type)
   )
 
-  merge(ret, r)
+  merge(ret, r, all.x = T)
+}
+
+truncDate <- function(x, i = 600) {
+  x - (as.double(x) %% i)
 }
