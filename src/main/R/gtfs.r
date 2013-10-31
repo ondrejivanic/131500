@@ -13,7 +13,7 @@ gtfs.load <- function(path) {
   }
 
   list(
-    "agency" = read.csv(file.path(path, "agency.txt")),
+    "agency" = read.gtfs.file("agency.txt"),
     "calendar" = transform(
       read.gtfs.file("calendar.txt"),
       start_date = ymd(start_date),
