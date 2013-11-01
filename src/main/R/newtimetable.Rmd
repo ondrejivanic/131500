@@ -2,13 +2,6 @@
 require(knitr)
 opts_chunk$set(cache=TRUE, message=FALSE, tidy=FALSE)
 
-suppressMessages(library(sp))
-suppressMessages(library(rgdal))
-suppressMessages(library(rgeos))
-suppressMessages(library(ggplot2))
-suppressMessages(library(ggmap))
-suppressMessages(library(lubridate))
-
 source("src/main/R/gtfs.r")
 ```
 

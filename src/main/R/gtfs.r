@@ -1,3 +1,11 @@
+suppressMessages(library(sp))
+suppressMessages(library(rgdal))
+suppressMessages(library(rgeos))
+suppressMessages(library(ggplot2))
+suppressMessages(library(ggmap))
+suppressMessages(library(lubridate))
+suppressMessages(library(plyr))
+
 gtfs.load <- function(path) {
 
   WGS84toUTMzone56 <- function (latlon) {
