@@ -80,11 +80,6 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
     data[[tolower(weekdays(date))]] == 1
   }
   
-  as.seconds <- function(t) {
-      t <- strsplit(as.character(t), ":")
-      sapply(t, function(y) sum(as.numeric(y) * c(3600, 60, 1)))
-  }
-  
   calendar.dates <- gtfs[["calendar_dates"]]
   calendar <- gtfs[["calendar"]]
   trips <- gtfs[["trips"]]
@@ -104,8 +99,8 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   r <- merge(r, routes[, c("route_id", "route_type")], all.x = T)[, c("trip_id", "route_type")]
   
   ret <- transform(stop.times[stop.times$trip_id %in% t, ],
-    arrival_time =  d + as.seconds(arrival_time),
-    departure_time = d + as.seconds(departure_time),
+    arrival_time =  d + time.to.seconds(arrival_time),
+    departure_time = d + time.to.seconds(departure_time),
     pickup_type = factor(pickup_type),
     drop_off_type = factor(drop_off_type)
   )
@@ -153,3 +148,10 @@ gtfs.by.mode <- function(gtfs, m) {
 truncDate <- function(x, i = 600) {
   x - (as.double(x) %% i)
 }
+
+time.to.seconds <- function(t) {
+  t <- strsplit(as.character(t), ":")
+  sapply(t, function(y) sum(as.numeric(y) * c(3600, 60, 1)))
+}
+
+
