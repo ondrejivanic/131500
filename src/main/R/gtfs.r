@@ -150,6 +150,25 @@ gtfs.by.mode <- function(gtfs, m) {
 }
 
 truncDate <- function(x, i = 600) {
+compute.hex.bins <- function(x, xbnds, ybnds, lat.bin.width, lon.bin.width) {
+  
+  bins <- hexbin(
+    x = x$stop_lon, y = x$stop_lat, 
+    xbins = diff(xbnds) / lon.bin.width,
+    shape = lon.bin.width / lat.bin.width, # "square" bins
+    xbnds = xbnds, ybnds = ybnds, 
+    IDs = T
+  )
+  
+  merge(
+    data.frame(hcell2xy (bins),  ID = bins@cell),
+    ddply(data.frame(ID = bins@cID, trip_id = x$trip_id, time = x$time), .(ID, time), function(x) { 
+      data.frame(count = length(unique(x$trip_id)))
+    }, .parallel = T),
+    all.x = T
+  )
+}
+
   x - (as.double(x) %% i)
 }
 
