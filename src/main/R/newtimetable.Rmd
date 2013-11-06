@@ -51,7 +51,7 @@ GTFS dataset must have **stops.txt** file which contains stop location (WGS84), 
 old <- gtfs.load("data/Oct2012")
 ```
 
-```{r show-old-timetable results='asis', echo=FALSE }
+```{r show-old-timetable, results='asis', echo=FALSE }
 kable(head(old[["stops"]]), "html")
 ```
 
@@ -61,7 +61,7 @@ and the new timetable:
 new <- gtfs.load("data/Oct2013")
 ```
 
-```{r show-new-timetable results='asis', echo=FALSE }
+```{r show-new-timetable, results='asis', echo=FALSE }
 kable(head(new[["stops"]]), "html")
 ```
 
@@ -74,7 +74,7 @@ polygons <- rbind(
 )
 ```
 Apparently, public transport coverage remains unchanged under the new time table.
-```{r, show-bbox fig.height=10, fig.width=10 }
+```{r, show-bbox, fig.height=10, fig.width=10 }
 # get base map
 base <- with(polygons, get_map(paste(mean(y), mean(x), sep = " "), zoom = 7, color = "bw"))
 
@@ -152,7 +152,7 @@ new.old.bins <- with(
 ```
 
 Some animation
-```{r, network-changes-animation fig.show='animate'}
+```{r, network-changes-animation, fig.show='animate'}
 values <- unique(c(seq(min(new.old.bins$count.diff), 0, length.out = 6), seq(mm, max(new.old.bins$count.diff), length.out = 6)))
 mid = abs(min(new.old.bins$count.diff) / max(new.old.bins$count.diff))
 rescaled <- unique(c(
