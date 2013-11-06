@@ -1,10 +1,14 @@
-suppressMessages(library(sp))
-suppressMessages(library(rgdal))
-suppressMessages(library(rgeos))
-suppressMessages(library(ggplot2))
-suppressMessages(library(ggmap))
-suppressMessages(library(lubridate))
-suppressMessages(library(plyr))
+library(sp)
+library(rgdal)
+library(rgeos)
+library(ggplot2)
+library(ggmap)
+library(lubridate)
+library(plyr)
+library(hexbin)
+library(data.table)
+library(doMC)
+registerDoMC()
 
 gtfs.load <- function(path) {
 
