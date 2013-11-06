@@ -91,4 +91,91 @@ ggmap(base) +
   ggtitle("Greater Sydney public transport area")
 ```
 
+Basic network statistics
+------------------------
+Sydney transport network has three modes: bus, train, and ferry.
+
+```{r trips-summary }
+old.singleday <- gtfs.trips(old, as.POSIXct("2013-10-09"))
+new.singleday <- gtfs.trips(new, as.POSIXct("2013-11-06"))
+
+latlon <- old[["stops"]][, c("stop_id", "stop_lat", "stop_lon")]
+
+# add location info to transit stops
+old.singleday <- merge(old.singleday[, c("trip_id", "stop_id", "arrival_time", "route_type")], latlon)
+old.singleday$time <- with(old.singleday,
+  truncDiffTime(min(arrival_time, na.rm  = T), arrival_time) %% 86400
+)
+old.singleday <- old.singleday[!is.na(old.singleday$arrival_time), ]
+
+new.singleday <- merge(new.singleday[, c("trip_id", "stop_id", "arrival_time", "route_type")], latlon)
+new.singleday$time <- with(new.singleday,
+  truncDiffTime(min(arrival_time, na.rm = T), arrival_time) %% 86400
+)
+new.singleday <- new.singleday[!is.na(new.singleday$arrival_time), ]
+
+# http://www.csgnetwork.com/degreelenllavcalc.html
+# Selected Specific Latitude = -33.8230854940154
+# 1deg lat -> 110 919.17m
+# 1deg lon ->  92 575.84m
+# this give us 4km hex bins
+lat.bin.width <- 4000 / 110919.17
+lon.bin.width <- 4000 / 92575.84
+
+xbnds <- c(
+  floor(min(polygons$x) / lon.bin.width) * lon.bin.width, 
+  ceiling(max(polygons$x) / lon.bin.width) * lon.bin.width
+)
+ybnds <- c(
+  floor(min(polygons$y) / lat.bin.width) * lat.bin.width,
+  ceiling(max(polygons$y) / lat.bin.width) * lat.bin.width
+)
+
+registerDoMC() # 4 cores, takes ~ 2 x 20 minutes
+old.bins <- compute.hex.bins(old.singleday, xbnds, ybnds, lat.bin.width, lon.bin.width)
+new.bins <- compute.hex.bins(new.singleday, xbnds, ybnds, lat.bin.width, lon.bin.width)
+
+new.old.bins <- with(
+  merge(old.bins, new.bins, by = c("ID", "time"), all = T, suffixes = c(".old", ".new")),
+  data.frame(
+    ID = ID,
+    time = time,
+    count.old = ifelse(is.na(count.old), 0, count.old),
+    count.new = ifelse(is.na(count.new), 0, count.new),
+    count.diff = ifelse(is.na(count.new), 0, count.new) - ifelse(is.na(count.old), 0, count.old),
+    lat = ifelse(is.na(y.old), y.new, y.old),
+    lon = ifelse(is.na(x.old), x.new, x.old),
+    change.old.new = interaction(is.na(y.old), is.na(y.new))
+  )
+)
+
+```
+
+Some animation
+```{r, network-changes-animation fig.show='animate'}
+values <- unique(c(seq(min(new.old.bins$count.diff), 0, length.out = 6), seq(mm, max(new.old.bins$count.diff), length.out = 6)))
+mid = abs(min(new.old.bins$count.diff) / max(new.old.bins$count.diff))
+rescaled <- unique(c(
+  rescale(seq(min(zz$count.diff), 0, length.out = 6), c(0, mid)), 
+  rescale(seq(0, max(zz$count.diff), length.out = 6), c(mid, 1))
+))
+# display.brewer.all()
+g <- scale_fill_gradientn(
+  limits = range(values),
+  colours = brewer.pal(11, "RdYlBu"),
+  values = rescaled,
+  breaks = round(values, -2),
+  labels = round(values, -2),
+  name="Difference in available services\n(reduced .. same .. increased)"
+)
+
+l_ply(sort(unique(new.old.bins$time)), function(t, d, grad) {
+  g <- ggmap(base) + 
+    geom_hex(data = d[d$time == t, ], stat="identity", aes(x = lon, y = lat, fill = count.diff), alpha = 0.8) +
+    grad +
+    ggtitle(format(trunc(Sys.time(), "day") + t, "%H:%M")) +
+    theme(legend.position="bottom")
+  ggsave(filename = paste0(format(trunc(Sys.time(), "day") + t, "%H:%M"), ".png"), plot = g, width = 10)
+}, d = new.old.bins, grad = g)
+```
 
