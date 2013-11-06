@@ -1,8 +1,14 @@
 ```{r setup, include=FALSE}
 require(knitr)
-opts_chunk$set(cache=TRUE, message=FALSE, tidy=FALSE)
+opts_knit$set(root.dir = '~/Projects/131500/')
+opts_chunk$set(
+  cache = TRUE, cache.path = "~/Projects/131500/target/cache/",
+  message = FALSE, tidy = FALSE,
+  fig.path = "~/Projects/131500/target/figures/",
+  base.dir = "~/Projects/131500/target/"
+)
 
-source("src/main/R/gtfs.r")
+source("gtfs.r")
 ```
 
 Sydney new public transport timetable
