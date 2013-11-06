@@ -64,7 +64,7 @@ The **sp** package has **gConvexHull** function which returns the smallest conve
 ```{r}
 polygons <- rbind(
   data.frame(gtfs.bbox(new, "convex"), type = "new"),
-  data.frame(gtfs.bbox(new, "convex"), type = "old")
+  data.frame(gtfs.bbox(old, "convex"), type = "old")
 )
 ```
 Apparently, public transport coverage remains unchanged under the new time table.
