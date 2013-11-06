@@ -38,7 +38,7 @@ If your imported data set has the first column beginning with 'X.' then the inpu
 
 > readLines() and scan() (and hence read.table()) in a UTF-8 locale now discard a UTF-8 byte-order-mark (BOM). Such BOMs are allowed but not recommended by the Unicode Standard: however Microsoft applications can produce them and so they are sometimes found on websites.The encoding name "UTF-8-BOM" for a connection will ensure that a UTF-8 BOM is discarded.
 
-```{r}
+```{r bom-example}
 make.names("\357\273\277stop_id")
 ```
 
@@ -47,34 +47,34 @@ In older versions of R you need to rename the first column or remove BOM manuall
 Extent of Greater Sydney public transport area
 ----------------------------------------------
 GTFS dataset must have **stops.txt** file which contains stop location (WGS84), name and several other attributes. Let's read the previous timetable:
-```{r}
+```{r load-old-timetable }
 old <- gtfs.load("data/Oct2012")
 ```
 
-```{r results='asis', echo=FALSE }
+```{r show-old-timetable results='asis', echo=FALSE }
 kable(head(old[["stops"]]), "html")
 ```
 
 and the new timetable:
 
-```{r}
+```{r load-new-timetable }
 new <- gtfs.load("data/Oct2013")
 ```
 
-```{r results='asis', echo=FALSE }
+```{r show-new-timetable results='asis', echo=FALSE }
 kable(head(new[["stops"]]), "html")
 ```
 
 The **sp** package has **gConvexHull** function which returns the smallest convex polygon that contains all subgeometries, in our case all transit stops.
 
-```{r}
+```{r compute-bbox}
 polygons <- rbind(
   data.frame(gtfs.bbox(new, "convex"), type = "new"),
   data.frame(gtfs.bbox(old, "convex"), type = "old")
 )
 ```
 Apparently, public transport coverage remains unchanged under the new time table.
-```{r, fig.height=10, fig.width=10 }
+```{r, show-bbox fig.height=10, fig.width=10 }
 # get base map
 base <- with(polygons, get_map(paste(mean(y), mean(x), sep = " "), zoom = 7, color = "bw"))
 
