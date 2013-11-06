@@ -2,13 +2,14 @@ library(sp)
 library(rgdal)
 library(rgeos)
 library(ggplot2)
+library(scales)
 library(ggmap)
 library(lubridate)
 library(plyr)
 library(hexbin)
-library(data.table)
 library(doMC)
-registerDoMC()
+library(reshape2)
+library(RColorBrewer)
 
 gtfs.load <- function(path) {
 
