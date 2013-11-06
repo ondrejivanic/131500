@@ -169,7 +169,12 @@ compute.hex.bins <- function(x, xbnds, ybnds, lat.bin.width, lon.bin.width) {
   )
 }
 
+truncDate <- function(x, i = 900) {
   x - (as.double(x) %% i)
+}
+
+truncDiffTime <- function(s, e, i = 900) {
+  floor(as.numeric(difftime(e, s, units = "secs")) / i) * i
 }
 
 time.to.seconds <- function(t) {
