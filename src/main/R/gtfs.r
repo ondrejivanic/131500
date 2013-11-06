@@ -151,7 +151,60 @@ gtfs.by.mode <- function(gtfs, m) {
   )
 }
 
-truncDate <- function(x, i = 600) {
+gtfs.trips.summary <- function(trips) {
+  #trips <- old.singleday
+  s <- trips[order(trips$trip_id, trips$stop_sequence), ]
+  s$n <- 1:nrow(s)
+  s$n1 <- s$n - 1
+
+  # Warning message can be ignored: column name ‘n’ is duplicated in the result
+  # 's' is ordered by trip and stop sequence. Hence previous row to current row contains
+  # previous stop in actual trip or last stop from different trip.
+  ss <- merge(s, s, by.x = "n", by.y = "n1", all.x = T, sort = F, suffixes = c("", ".x"))
+  # we only need first or last stop for each trip
+  cols <- c("trip_id", "arrival_time", "departure_time", "stop_id", "stop_sequence", "shape_dist_traveled", "n", "route_type")
+  ss <- ss[ss$stop_sequence == 1 | ss$stop_sequence.x == 1 | is.na(ss$stop_sequence.x), cols]
+  # compute summary
+  trips.summary <- with(
+    # ss looks like this:
+    # trip_id=1 <info about first stop>
+    # trip_id=1 <info about last stop>
+    # ...
+    # we need structure like this:
+    # trip_id=1 <info about first stop> <info about last stop>
+    merge(ss[ss$stop_sequence == 1, ], ss[ss$stop_sequence != 1, ], by = "trip_id", all.x = T, all.y = F, suffixes = c(".s", ".e")), {
+    stops_levels <- levels(factor(union(stop_id.s, stop_id.e)))
+    data.frame(
+      trip_id = factor(trip_id),
+      stop_from = factor(stop_id.s, levels = stops_levels),
+      stop_to = factor(stop_id.e, levels = stops_levels),
+      start_time = arrival_time.s,
+      end_time = departure_time.e,
+      travel_time = as.numeric(difftime(arrival_time.e, arrival_time.s, units = "secs")),
+      distance = shape_dist_traveled.e / 1000, # in km
+      stops = n.e - n.s + 1,
+      route_type = route_type.s
+    )}
+  )
+  
+#
+#   this takes ages...
+#   
+#   trips <- ddply(gtfs[["stop_times"]], .(trip_id), function(x) {
+#     x <- x[order(x$stop_sequence), ]
+#     first <- head(x, 1)
+#     last <- tail(x, 1)
+# 
+#     data.frame(
+#       stop_from = first$stop_id,
+#       stop_to = last$stop_id,
+#       distnace = last$shape_dist_traveled,
+#       travel_time = time.to.seconds(last$departure_time) - time.to.seconds(first$arrival_time),
+#       stops = nrow(x)
+#     )    
+#   }, .progress = "text")  
+}
+
 compute.hex.bins <- function(x, xbnds, ybnds, lat.bin.width, lon.bin.width) {
   
   bins <- hexbin(
