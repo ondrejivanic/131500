@@ -175,7 +175,7 @@ l_ply(sort(unique(new.old.bins$time)), function(t, d, grad) {
     grad +
     ggtitle(format(trunc(Sys.time(), "day") + t, "%H:%M")) +
     theme(legend.position="bottom")
-  ggsave(filename = paste0(format(trunc(Sys.time(), "day") + t, "%H:%M"), ".png"), plot = g, width = 10)
+  print(g)
 }, d = new.old.bins, grad = g)
 ```
 
