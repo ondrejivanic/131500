@@ -1,11 +1,11 @@
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(root.dir = '~/Projects/131500/')
 opts_chunk$set(
-  cache = TRUE, cache.path = "~/Projects/131500/target/cache/",
+  cache = TRUE, cache.path = "../../../target/cache/",
   message = FALSE, tidy = FALSE,
-  fig.path = "~/Projects/131500/target/figures/",
-  base.dir = "~/Projects/131500/target/"
+  fig.path = "../../../target/figures/",
+  base.dir = "../../../target/",
+  animation.fun = hook_scianimator
 )
 
 source("gtfs.r")
@@ -48,7 +48,7 @@ Extent of Greater Sydney public transport area
 ----------------------------------------------
 GTFS dataset must have **stops.txt** file which contains stop location (WGS84), name and several other attributes. Let's read the previous timetable:
 ```{r load-old-timetable }
-old <- gtfs.load("data/Oct2012")
+old <- gtfs.load("../../../data/Oct2012")
 ```
 
 ```{r show-old-timetable, results='asis', echo=FALSE }
@@ -58,7 +58,7 @@ kable(head(old[["stops"]]), "html")
 and the new timetable:
 
 ```{r load-new-timetable }
-new <- gtfs.load("data/Oct2013")
+new <- gtfs.load("../../../data/Oct2013")
 ```
 
 ```{r show-new-timetable, results='asis', echo=FALSE }
