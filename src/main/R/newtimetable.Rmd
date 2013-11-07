@@ -153,11 +153,11 @@ new.old.bins <- with(
 
 Some animation
 ```{r, network-changes-animation, fig.show='animate'}
-values <- unique(c(seq(min(new.old.bins$count.diff), 0, length.out = 6), seq(mm, max(new.old.bins$count.diff), length.out = 6)))
+values <- unique(c(seq(min(new.old.bins$count.diff), 0, length.out = 6), seq(0, max(new.old.bins$count.diff), length.out = 6)))
 mid = abs(min(new.old.bins$count.diff) / max(new.old.bins$count.diff))
 rescaled <- unique(c(
-  rescale(seq(min(zz$count.diff), 0, length.out = 6), c(0, mid)), 
-  rescale(seq(0, max(zz$count.diff), length.out = 6), c(mid, 1))
+  rescale(seq(min(new.old.bins$count.diff), 0, length.out = 6), c(0, mid)), 
+  rescale(seq(0, max(new.old.bins$count.diff), length.out = 6), c(mid, 1))
 ))
 # display.brewer.all()
 g <- scale_fill_gradientn(
