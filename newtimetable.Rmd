@@ -2,9 +2,8 @@
 require(knitr)
 opts_chunk$set(
   cache.path = "target/cache/",
-  message = FALSE, tidy = FALSE,
   fig.path = "target/figures/",
-  base.dir = "target/",
+  message = FALSE, tidy = FALSE
 )
 opts_knit$set(animation.fun = hook_scianimator)
 source("gtfs.r")
@@ -73,7 +72,7 @@ polygons <- rbind(
 )
 ```
 Apparently, public transport coverage remains unchanged under the new time table.
-```{r, show-bbox, fig.height=10, fig.width=10 }
+```{r, show-bbox, fig.height=10, fig.width=10, cache=TRUE }
 # get base map
 base <- with(polygons, get_map(paste(mean(y), mean(x), sep = " "), zoom = 7, color = "bw"))
 
