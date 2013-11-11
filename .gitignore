@@ -8,3 +8,6 @@ cache
 figure
 ggmapTemp.png
 .Rproj.user
+
+# MacOS stuff
+.DS_Store
