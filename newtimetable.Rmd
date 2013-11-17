@@ -1,4 +1,4 @@
-```{r setup}
+```{r setup, include=FALSE}
 require(knitr)
 opts_chunk$set(
   cache.path = "target/cache/",
