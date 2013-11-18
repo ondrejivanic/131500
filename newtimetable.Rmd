@@ -29,6 +29,26 @@ trips.txt | Trips for each route. A trip is a sequence of two or more stops that
 stop_times.txt | Times that a vehicle arrives at and departs from individual stops for each trip
 calendar.txt | Dates for service IDs using a weekly schedule. Specify when service starts and ends, as well as days of the week where service is available
 
+```{r gtfs-dot, engine = "dot", fig.cap = "GTFS", cache=TRUE}
+// see http://yihui.name/knitr/demo/engines/
+graph gtfs {
+  node [shape = box]
+  subgraph cluster_1 {
+    label = "Transport Data Exchange (TDX) program"
+    agency -- routes [label = "agency_id", constraint=false]
+    routes -- trips [label = "route_id"]
+    trips -- stop_times [label = "trip_id"]
+    stop_times -- stops [label = "stop_id"]
+    shapes -- trips [label = "shape_id"]
+    calendar -- trips [label = "service_id"]
+    calendar_dates -- trips [label = "service_id"]
+  }
+  stops -- transfers [label = "stop_id"]
+  fare_attributes -- fare_rules [label = "fare_id"]
+  fare_rules -- routes [label = "route_id"]
+}
+```
+
 General Transit Feed Specification (GTFS) is documented at [Google Developers web site](https://developers.google.com/transit/gtfs/reference).
 
 ### BOM (byte-order-mark)
