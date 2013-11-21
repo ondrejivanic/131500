@@ -178,22 +178,62 @@ rescaled <- unique(c(
   rescale(seq(min(new.old.bins$count.diff), 0, length.out = 6), c(0, mid)), 
   rescale(seq(0, max(new.old.bins$count.diff), length.out = 6), c(mid, 1))
 ))
+pal <- brewer.pal(11, "RdYlBu")
+pal[5] <- brewer.pal(9, "Greens")[4] 
 # display.brewer.all()
 g <- scale_fill_gradientn(
   limits = range(values),
-  colours = brewer.pal(11, "RdYlBu"),
+  colours = pal,
   values = rescaled,
   breaks = round(values, -2),
   labels = round(values, -2),
   name="Difference in available services\n(reduced .. same .. increased)"
 )
-l_ply(sort(unique(new.old.bins$time)), function(t, d, grad) {
-  g <- ggmap(base) + 
+anim <- llply(sort(unique(new.old.bins$time)), function(t, d, grad) {
+  ggmap(base) + 
     geom_hex(data = d[d$time == t, ], stat="identity", aes(x = lon, y = lat, fill = count.diff), alpha = 0.8) +
-    grad +
-    ggtitle(format(trunc(Sys.time(), "day") + t, "%H:%M")) +
+    grad + bbox +
+    ggtitle(format(trunc(Sys.time(), "day") + t, "Public transport availability at %H:%M")) +
     theme(legend.position="bottom")
-  print(g)
 }, d = new.old.bins, grad = g)
+print(anim)
 ```
 
+Headway time
+------------
+One of the important metrics in the transport industry headway time. Headway is a measurement of the distance or time between vehicles in a transit system. It describes distance between subsequent vehicles on the same route.
+
+```{r headway-time, cache=TRUE, echo=FALSE}
+old.time <- compute.headway(old.singleday, old[["trips"]])
+new.time <- compute.headway(new.singleday, new[["trips"]])
+
+old.time <- merge(old.time, old[["stops"]][, c("stop_id", "stop_lat", "stop_lon")])
+new.time <- merge(new.time, new[["stops"]][, c("stop_id", "stop_lat", "stop_lon")])
+
+zz <- merge(old.time, new.time, by = c("stop_id"), suffixes = c(".old", ".new"), all = T)
+zz <- zz[complete.cases(zz), ]
+
+# > 0 worse; = 0 same; < 0 improvement
+zz$diff <- zz$p50.new - zz$p50.old
+
+ggmap(base) + 
+  geom_point(data = zz[zz$diff != 0, ], aes(x = stop_lon.old, y = stop_lat.old, colour = cut(diff, cuts))) +
+  bbox
+
+g <- scale_fill_gradient2(
+  name="Difference in available services\n(reduced .. same .. increased)"
+)
+cuts <- 60 * c(0, 1, 5, 10, 15, 30, 60, 6*60, 12*60, 24*60)
+cuts <- unique(c(- cuts, cuts))
+pal <- c(
+  rev(brewer.pal(floor(length(cuts) / 2), "Reds")),
+  "#FFFFFF",
+  brewer.pal(floor(length(cuts) / 2), "Greens")
+)
+ggplot(data = zz[zz$diff != 0 & abs(zz$diff < 60000), ], aes(x = stop_lon.old, y = stop_lat.old)) + 
+  geom_point(aes(colour = diff), size = 0.8) +
+  bbox + scale_color_gradientn(colours = pal) + 
+  ggtitle("Headway time change") +
+  theme(legend.position="bottom")
+
+```
