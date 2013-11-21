@@ -198,9 +198,9 @@ Number of trips | `r old.stats[["total.trips"]]` | `r new.stats[["total.trips"]]
  - Train        | `r old.stats[["train.trips"]]` | `r new.stats[["train.trips"]]`
  - Ferry        | `r old.stats[["ferry.trips"]]` | `r new.stats[["ferry.trips"]]`
 Longest trip    | |
- - Bus          | `r old.stats[["bus.trips"]]`   | `r new.stats[["bus.trips"]]`
- - Train        | `r old.stats[["train.trips"]]` | `r new.stats[["train.trips"]]`
- - Ferry        | `r old.stats[["ferry.trips"]]` | `r new.stats[["ferry.trips"]]`
+ - Bus          | `r old.stats[["bus.longest"]]`   | `r new.stats[["bus.longest"]]`
+ - Train        | `r old.stats[["train.longest"]]` | `r new.stats[["train.longest"]]`
+ - Ferry        | `r old.stats[["ferry.longest"]]` | `r new.stats[["ferry.longest"]]`
 
 ```{r speed-by-mode, cahce=TRUE, fig.height=10, fig.width=10, fig.show='animate', echo=FALSE }
 ggplot(data = old.summary, aes(y = travel_time, x = distance)) + 
