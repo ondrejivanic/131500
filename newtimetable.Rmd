@@ -123,7 +123,7 @@ GTFS dataset provided by TDX programme is rather a shapshot than complete timeta
 * old timetable: 2013-10-09
 * new timetable: 2013-11-06
 
-```{r trips-summary, cache=TRUE }
+```{r trips-summary, cache=TRUE, warning=FALSE }
 old.singleday <- gtfs.trips(old, as.POSIXct("2013-10-09"))
 new.singleday <- gtfs.trips(new, as.POSIXct("2013-11-06"))
 
@@ -202,7 +202,7 @@ Longest trip    | |
  - Train        | `r old.stats[["train.longest"]]` | `r new.stats[["train.longest"]]`
  - Ferry        | `r old.stats[["ferry.longest"]]` | `r new.stats[["ferry.longest"]]`
 
-```{r speed-by-mode, cahce=TRUE, fig.height=10, fig.width=10, fig.show='animate', echo=FALSE }
+```{r speed-by-mode, cahce=TRUE, fig.height=10, fig.width=10, fig.show='animate', warning=FALSE }
 ggplot(data = old.summary, aes(y = travel_time, x = distance)) + 
   geom_point(aes(colour = route_type), alpha = 0.7) +
   geom_abline(intercept = 0, slope = 3600/31, linetype = "dotted") + # AM peak
