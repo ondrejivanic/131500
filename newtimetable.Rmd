@@ -197,19 +197,25 @@ Longest trip    | |
 ```{r speed-by-mode, cahce=TRUE, fig.height=10, fig.width=10, fig.show='animate', echo=FALSE }
 ggplot(data = old.summary, aes(y = travel_time, x = distance)) + 
   geom_point(aes(colour = route_type), alpha = 0.7) +
-  scale_y_continuous(breaks = seq(0, 5, 1) * 3600, labels = seq(0, 5)) + xlim(0, 250) +
+  geom_abline(intercept = 0, slope = 3600/31, linetype = "dotted") + # AM peak
+  geom_abline(intercept = 0, slope = 3600/42, linetype = "dotted") + # PM peak
+  scale_y_continuous(breaks = seq(0, 5, 1) * 3600, labels = seq(0, 5)) +
+  xlim(0, 250) + 
   facet_grid(route_type ~ .) +
   ylab("Travel time [hours]") +
   xlab("Distance [km]") +
-  ggtitle("Old timetable")
+  ggtitle("Old timetable\n(cars: AM peak: 31km/h, PM peak: 42km/h)")
 
 ggplot(data = new.summary, aes(y = travel_time, x = distance)) + 
   geom_point(aes(colour = route_type), alpha = 0.7) +
-  scale_y_continuous(breaks = seq(0, 5, 1) * 3600, labels = seq(0, 5)) + xlim(0, 250) +
+  geom_abline(intercept = 0, slope = 3600/31, linetype = "dotted") +
+  geom_abline(intercept = 0, slope = 3600/42, linetype = "dotted") +
+  scale_y_continuous(breaks = seq(0, 5, 1) * 3600, labels = seq(0, 5)) +
+  xlim(0, 250) + 
   facet_grid(route_type ~ .) +
   ylab("Travel time [hours]") +
   xlab("Distance [km]") +
-  ggtitle("New timetable")
+  ggtitle("New timetable\n(cars: AM peak: 31km/h, PM peak: 42km/h)")
 ```
 
 Public transport availability during a workday
@@ -282,3 +288,7 @@ ggplot(data = zz[zz$diff != 0 & abs(zz$diff < 60000), ], aes(x = stop_lon.old, y
   theme(legend.position="bottom")
 
 ```
+
+Sources
+-------
+[Annual Speed and Traffic Volume Data in Sydney](http://www.rms.nsw.gov.au/publicationsstatisticsforms/downloads/annual_speed_and_traffic_volume_data_2009-2010.pdf)
