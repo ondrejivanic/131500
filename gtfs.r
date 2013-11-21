@@ -105,43 +105,6 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   merge(ret, r, all.x = T)
 }
 
-gtfs.by.mode <- function(gtfs, m) {
-  routes <- gtfs[["routes"]]
-  routes <- droplevels(routes[routes$route_type == m, ])
-  
-  agency <- gtfs[["agency"]]
-  agency <- droplevels(agency[agency$agency_id %in% routes$agency_id, ])
-  
-  trips <- gtfs[["trips"]]
-  trips <- droplevels(trips[trips$route_id %in% routes$route_id, ])
-  
-  calendar <- gtfs[["calendar"]]
-  calendar <- droplevels(calendar[calendar$service_id %in% trips$service_id, ])
-
-  calendar_dates <- gtfs[["calendar_dates"]]
-  calendar_dates <- droplevels(calendar_dates[calendar_dates$service_id %in% trips$service_id, ])
-  
-  shapes <- gtfs[["shapes"]]
-  shapes <- droplevels(shapes[shapes$shape_id %in% trips$shape_id, ])
-  
-  stop_times <- gtfs[["stop_times"]]
-  stop_times <- droplevels(stop_times[stop_times$trip_id %in% trips$trip_id, ])
-  
-  stops <- gtfs[["stops"]]
-  stops <- droplevels(stops[stops$stop_id %in% stop_times$stop_id, ])
-  
-  list(
-    "routes" = routes,
-    "agency" = agency,
-    "trips" = trips,
-    "calendar" = calendar,
-    "calendar_dates" = calendar_dates,
-    "shapes" = shapes,
-    "stop_times" = stop_times,
-    "stops" = stops
-  )
-}
-
 gtfs.trips.summary <- function(trips) {
   s <- trips[order(trips$trip_id, trips$stop_sequence), ]
   s$n <- 1:nrow(s)
