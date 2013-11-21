@@ -260,4 +260,23 @@ time.to.seconds <- function(t) {
   sapply(t, function(y) sum(as.numeric(y) * c(3600, 60, 1)))
 }
 
+timetable.stats <- function(day, gtfs) {
+  list(
+    "total.trips"   = length(unique(day$trip_id)),
+    "bus.trips"     = length(unique(day[day$route_type == "Bus",   ]$trip_id)),
+    "train.trips"   = length(unique(day[day$route_type == "Train", ]$trip_id)),
+    "ferry.trips"   = length(unique(day[day$route_type == "Ferry", ]$trip_id)),
+    "bus.longest"   = trip.to.route(day[day$distance == max(day[day$route_type == "Bus",   ]$distance), ]$trip_id, gtfs),
+    "train.longest" = trip.to.route(day[day$distance == max(day[day$route_type == "Train", ]$distance), ]$trip_id, gtfs),
+    "ferry.longest" = trip.to.route(day[day$distance == max(day[day$route_type == "Ferry", ]$distance), ]$trip_id, gtfs)
+  )
+}
+
+trip.to.route <- function(trip_id, gtfs) {
+  trips <- gtfs[["trips"]]
+  routes <- gtfs[["routes"]]
+  route_id <- trips[trips$trip_id %in% as.character(trip_id), c("route_id")]
+  as.character(routes[routes$route_id %in% route_id, c("route_long_name")])
+}
+
 
