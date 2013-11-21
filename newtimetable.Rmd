@@ -116,13 +116,13 @@ new.singleday <- gtfs.trips(new, as.POSIXct("2013-11-06"))
 latlon <- old[["stops"]][, c("stop_id", "stop_lat", "stop_lon")]
 
 # add location info to transit stops
-old.singleday <- merge(old.singleday[, c("trip_id", "stop_id", "arrival_time", "route_type")], latlon)
+old.singleday <- merge(old.singleday, latlon)
 old.singleday$time <- with(old.singleday,
   truncDiffTime(min(arrival_time, na.rm  = T), arrival_time) %% 86400
 )
 old.singleday <- old.singleday[!is.na(old.singleday$arrival_time), ]
 
-new.singleday <- merge(new.singleday[, c("trip_id", "stop_id", "arrival_time", "route_type")], latlon)
+new.singleday <- merge(new.singleday, latlon)
 new.singleday$time <- with(new.singleday,
   truncDiffTime(min(arrival_time, na.rm = T), arrival_time) %% 86400
 )
