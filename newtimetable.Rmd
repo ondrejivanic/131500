@@ -1,3 +1,7 @@
+Analysing Sydney's new public transport timetable using knitR & ggplot
+======================================================================
+[github repository](https://github.com/ondrejivanic/131500)
+
 <link rel="stylesheet" href="html/scianimator.css">
 <script src="html/jquery.min.js"></script>
 <script src="html/jquery.scianimator.min.js"></script>
