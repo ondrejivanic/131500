@@ -221,7 +221,7 @@ ggplot(data = new.summary, aes(y = travel_time, x = distance)) +
 Public transport availability during a workday
 ----------------------------------------------
 
-```{r, network-changes-animation, fig.height=10, fig.width=10, fig.show='animate', echo=FALSE}
+```{r, network-changes-animation, fig.height=10, fig.width=10, fig.show='animate', results='hide'}
 opts_chunk$set(animation.fun = hook_scianimator)
 values <- unique(c(seq(min(new.old.bins$count.diff), 0, length.out = 6), seq(0, max(new.old.bins$count.diff), length.out = 6)))
 mid = abs(min(new.old.bins$count.diff) / max(new.old.bins$count.diff))
