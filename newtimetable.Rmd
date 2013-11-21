@@ -1,3 +1,7 @@
+<link rel="stylesheet" href="html/scianimator.css">
+<script src="html/jquery.min.js"></script>
+<script src="html/jquery.scianimator.min.js"></script>
+
 ```{r setup, include=FALSE}
 require(knitr)
 opts_chunk$set(
@@ -210,9 +214,6 @@ ggplot(data = new.summary, aes(y = travel_time, x = distance)) +
 
 Public transport availability during a workday
 ----------------------------------------------
-<link rel="stylesheet" href="http://vis.supstat.com/assets/themes/dinky/css/scianimator.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script src="http://vis.supstat.com/assets/themes/dinky/js/jquery.scianimator.min.js"></script>
 
 ```{r, network-changes-animation, fig.height=10, fig.width=10, fig.show='animate', echo=FALSE}
 opts_chunk$set(animation.fun = hook_scianimator)
