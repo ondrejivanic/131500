@@ -152,7 +152,6 @@ gtfs.by.mode <- function(gtfs, m) {
 }
 
 gtfs.trips.summary <- function(trips) {
-  #trips <- old.singleday
   s <- trips[order(trips$trip_id, trips$stop_sequence), ]
   s$n <- 1:nrow(s)
   s$n1 <- s$n - 1
