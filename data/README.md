@@ -2,10 +2,11 @@ Timetable data
 ==============
 
 Required time table datasets are available from here:
- - TODO: url 2012 
- - TODO: url 2013
 
-After download untar files into this directory
+ - https://dl.dropboxusercontent.com/u/2925186/tdx/Oct2012.tar.bz2
+ - https://dl.dropboxusercontent.com/u/2925186/tdx/Oct2013.tar.bz2
+
+After download untar files into this (i.e data/ ) directory
 
     Oct2012/agency.txt
     Oct2012/calendar.txt
