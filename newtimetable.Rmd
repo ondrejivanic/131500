@@ -33,6 +33,8 @@ trips.txt | Trips for each route. A trip is a sequence of two or more stops that
 stop_times.txt | Times that a vehicle arrives at and departs from individual stops for each trip
 calendar.txt | Dates for service IDs using a weekly schedule. Specify when service starts and ends, as well as days of the week where service is available
 
+### GTFS dataset structure
+
 ```{r gtfs-dot, engine = "dot", fig.cap = "GTFS", cache=TRUE}
 // see http://yihui.name/knitr/demo/engines/
 graph gtfs {
@@ -113,6 +115,14 @@ ggmap(base) +
   ggtitle("Greater Sydney public transport area")
 ```
 
+Basic network statistics
+------------------------
+Transit Capacity and Quality of Service Manual [TCQSM, 3rd edition](http://www.trb.org/Main/Blurbs/169437.aspx) provides instructions on how to quantitatively review everything from the person-capacity of a rail transit line to the quality of a bus stop. Most of the calculations are complex and in many cases external datasets (e.g. census data) are required to perform those calculations. 
+
+GTFS dataset provided by TDX programme is rather a shapshot than complete timetable. Hence, only single workday from each timetable (old and new) is analysed. The following days are used:
+* old timetable: 2013-10-09
+* new timetable: 2013-11-06
+
 ```{r trips-summary, cache=TRUE }
 old.singleday <- gtfs.trips(old, as.POSIXct("2013-10-09"))
 new.singleday <- gtfs.trips(new, as.POSIXct("2013-11-06"))
@@ -169,8 +179,6 @@ new.old.bins <- with(
 
 ```
 
-Basic network statistics
-------------------------
 Sydney transport network has three modes: bus, train, and ferry.
 
 ```{r basic-stats, cache=TRUE, echo=FALSE}
@@ -288,6 +296,9 @@ ggplot(data = zz[zz$diff != 0 & abs(zz$diff < 60000), ], aes(x = stop_lon.old, y
   theme(legend.position="bottom")
 
 ```
+
+Notes
+-----
 
 Sources
 -------
