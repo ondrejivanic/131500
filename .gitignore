@@ -11,3 +11,9 @@ ggmapTemp.png
 
 # MacOS stuff
 .DS_Store
+
+#output
+newtimetable.html
+newtimetable.md
+target/
+
