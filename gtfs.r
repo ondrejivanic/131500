@@ -103,13 +103,15 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   r <- unique(trips[trips$service_id %in% services, c("trip_id", "route_id")])
   r <- merge(r, routes[, c("route_id", "route_type")], all.x = T)[, c("trip_id", "route_type")]
   
-  ret <- transform(stop.times[stop.times$trip_id %in% t, ],
-    trip_id = trip_id,
-    arrival_time =  d + time.to.seconds(arrival_time),
-    departure_time = d + time.to.seconds(departure_time),
-    pickup_type = factor(pickup_type),
-    drop_off_type = factor(drop_off_type)
-  )
+  ret <- within(stop.times[stop.times$trip_id %in% t, ], {
+    trip_id <- trip_id
+    shape_dist_traveled <- shape_dist_traveled
+    stop_sequence <- stop_sequence
+    arrival_time <-  d + time.to.seconds(arrival_time)
+    departure_time <- d + time.to.seconds(departure_time)
+    pickup_type <- factor(pickup_type)
+    drop_off_type <- factor(drop_off_type)
+  })
 
   merge(ret, r, all.x = T)
 }
