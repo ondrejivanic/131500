@@ -109,10 +109,6 @@ ggmap(base) +
   ggtitle("Greater Sydney public transport area")
 ```
 
-Basic network statistics
-------------------------
-Sydney transport network has three modes: bus, train, and ferry.
-
 ```{r trips-summary, cache=TRUE }
 old.singleday <- gtfs.trips(old, as.POSIXct("2013-10-09"))
 new.singleday <- gtfs.trips(new, as.POSIXct("2013-11-06"))
@@ -169,8 +165,42 @@ new.old.bins <- with(
 
 ```
 
-Some animation
-```{r, network-changes-animation, fig.show='animate'}
+Basic network statistics
+------------------------
+Sydney transport network has three modes: bus, train, and ferry.
+
+```{r basic-stats, cache=TRUE, echo=FALSE}
+timetable.stats <- function(one.day) {
+  list(
+     "total.trips" = length(unique(one.day$trip_id)),
+     "bus.trips"   = length(unique(one.day[one.day$route_type == "Bus", ]$trip_id)),
+     "train.trips" = length(unique(one.day[one.day$route_type == "Train", ]$trip_id)),
+     "ferry.trips" = length(unique(one.day[one.day$route_type == "Ferry", ]$trip_id))
+  )
+}
+
+old.stats <- timetable.stats(old.singleday)
+new.stats <- timetable.stats(new.singleday)
+
+```
+
+                | Old timetable | New timetable
+----------------|-----------------------------------------:|---------------------------------------:
+Number of trips | `r old.stats[["total.trips"]]` | `r new.stats[["total.trips"]]`
+ - Bus          | `r old.stats[["bus.trips"]]`   | `r new.stats[["bus.trips"]]`
+ - Train        | `r old.stats[["train.trips"]]` | `r new.stats[["train.trips"]]`
+ - Ferry        | `r old.stats[["ferry.trips"]]` | `r new.stats[["ferry.trips"]]`
+Longest trip    | |
+ - Bus          | 
+ 
+
+Public transport availability during a workday
+----------------------------------------------
+<link rel="stylesheet" href="http://vis.supstat.com/assets/themes/dinky/css/scianimator.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://vis.supstat.com/assets/themes/dinky/js/jquery.scianimator.min.js"></script>
+
+```{r, network-changes-animation, fig.height=10, fig.width=10, fig.show='animate', echo=FALSE}
 opts_chunk$set(animation.fun = hook_scianimator)
 values <- unique(c(seq(min(new.old.bins$count.diff), 0, length.out = 6), seq(0, max(new.old.bins$count.diff), length.out = 6)))
 mid = abs(min(new.old.bins$count.diff) / max(new.old.bins$count.diff))
