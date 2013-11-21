@@ -13,14 +13,6 @@ library(RColorBrewer)
 
 gtfs.load <- function(path) {
 
-  WGS84toUTMzone56 <- function (latlon) {
-    coordinates(latlon) <- ~ stop_lon + stop_lat
-    proj4string(latlon) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
-    utm <- as.data.frame(spTransform(latlon, CRS("+proj=utm +zone=56 ellps=WGS84")))
-    names(utm) <- c("lon", "lat")
-    utm
-  }
-  
   read.gtfs.file <- function (name, ...) {
     read.csv(file.path(path, name), na.strings = c("", "NA"))
   }
@@ -51,10 +43,7 @@ gtfs.load <- function(path) {
       pickup_type = factor(pickup_type),
       drop_off_type = factor(drop_off_type)
     ),
-    "stops" = transform(
-      read.gtfs.file("stops.txt"),
-      utm = WGS84toUTMzone56(data.frame(stop_lat, stop_lon))
-    ),
+    "stops" = read.gtfs.file("stops.txt"),
     "trips" = read.gtfs.file("trips.txt")
   )  
 }
