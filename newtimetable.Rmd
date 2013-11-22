@@ -126,14 +126,14 @@ new.segments <- compute.segments(new[["shapes"]])
 g <- ggplot(data = new.segments) +
   geom_segment(aes(x = x1, xend = x2, y = y1, yend = y2, colour = cut(count, 
     #breaks = c(0, 10^seq(0, 4)), labels = c("1", "2..10", "11..100", "101..1000", "1000+")
-    breaks = c(0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000),
-    labels = c("1", "2", "5", "10", "20", "50", "100", "200", "500", "1000", "2000", "5000")
+    breaks = c(0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000),
+    labels = c("1", "10", "20", "50", "100", "200", "500", "1000", "2000")
   ))) +
-  scale_color_discrete(name = "Services")
+  scale_colour_brewer(name = "Services", palette = "PuBuGn", guide = "legend")
 
 g + bbox + ggtitle("Network overview\n(new timetable)")
 
-g + coord_equal(xlim = c(151.1, 151.35), ylim = c(-33.95, -33.75)) +
+g + coord_equal(xlim = c(151, 151.35), ylim = c(-33.95, -33.75)) +
   ggtitle("Network overview\n(new timetable)")
 
 ```
