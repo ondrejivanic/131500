@@ -119,6 +119,26 @@ ggmap(base) +
   ggtitle("Greater Sydney public transport area")
 ```
 
+Network overview
+----------------
+```{r network-overview, fig.height=10, fig.width=10, cache=TRUE, warning=FALSE}
+new.segments <- compute.segments(new[["shapes"]])
+g <- ggplot(data = new.segments) +
+  geom_segment(aes(x = x1, xend = x2, y = y1, yend = y2, colour = cut(count, 
+    #breaks = c(0, 10^seq(0, 4)), labels = c("1", "2..10", "11..100", "101..1000", "1000+")
+    breaks = c(0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000),
+    labels = c("1", "2", "5", "10", "20", "50", "100", "200", "500", "1000", "2000", "5000")
+  ))) +
+  scale_color_discrete(name = "Services")
+
+g + bbox + ggtitle("Network overview\n(new timetable)")
+
+g + coord_equal(xlim = c(151.1, 151.35), ylim = c(-33.95, -33.75)) +
+  ggtitle("Network overview\n(new timetable)")
+
+```
+
+
 Basic network statistics
 ------------------------
 Transit Capacity and Quality of Service Manual [TCQSM, 3rd edition](http://www.trb.org/Main/Blurbs/169437.aspx) provides instructions on how to quantitatively review everything from the person-capacity of a rail transit line to the quality of a bus stop. Most of the calculations are complex and in many cases external datasets (e.g. census data) are required to perform those calculations. 

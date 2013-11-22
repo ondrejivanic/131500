@@ -158,6 +158,22 @@ gtfs.trips.summary <- function(trips) {
 #   }, .progress = "text")  
 }
 
+compute.segments <- function(shapes) {
+  s <- shapes[order(shapes$shape_id, shapes$shape_pt_sequence), c("shape_pt_lat", "shape_pt_lon", "shape_dist_traveled")]
+  s$n <- 1:nrow(s)
+  s$n1 <- s$n - 1
+
+  # Warning message can be ignored: column name ‘n’ is duplicated in the result
+  # 's' is ordered by trip and stop sequence. Hence previous row to current row contains
+  # previous stop in actual trip or last stop from different trip.
+  ss <- merge(s, s, by.x = "n", by.y = "n1", all.x = T, sort = F, suffixes = c("", ".x"))
+  ss <- ss[ss$shape_dist_traveled.x > 0, c("shape_pt_lat", "shape_pt_lon", "shape_pt_lat.x", "shape_pt_lon.x")]
+  ss.agg <- count(ss[complete.cases(ss), ], .(shape_pt_lat, shape_pt_lon, shape_pt_lat.x, shape_pt_lon.x))
+  names(ss.agg) <- c("y1", "x1", "y2", "x2", "count")
+
+  ss.agg
+}
+
 compute.hex.bins <- function(x, xbnds, ybnds, lat.bin.width, lon.bin.width) {
   
   bins <- hexbin(
