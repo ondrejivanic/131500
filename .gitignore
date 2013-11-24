@@ -1,0 +1,17 @@
+# History files & workspace files
+.Rhistory
+.RData
+
+# GTFS data
+data
+ggmapTemp.png
+.Rproj.user
+
+# MacOS stuff
+.DS_Store
+
+#output
+newtimetable.html
+newtimetable.md
+target/cache
+
