@@ -11,12 +11,14 @@ library(doMC)
 library(reshape2)
 library(RColorBrewer)
 
+# load time table files into list
 gtfs.load <- function(path) {
 
   read.gtfs.file <- function (name, ...) {
     read.csv(file.path(path, name), na.strings = c("", "NA"))
   }
 
+  # TODO: change transform -> with/within
   list(
     "agency" = read.gtfs.file("agency.txt"),
     "calendar" = transform(
@@ -48,21 +50,25 @@ gtfs.load <- function(path) {
   )  
 }
 
+# compute bounding box around points
 gtfs.bbox <- function(gtfs, type = c("bbox", "convex")) {
   type <- match.arg(type)
 
+  # assing coordinate reference system
   points <- gtfs[["stops"]][, c("stop_lat", "stop_lon")]
   coordinates(points) <- ~ stop_lon + stop_lat # x, then y
-  proj4string(points) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84") # assing coordinate reference system
+  proj4string(points) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
   box <- gConvexHull(points) # str() is your friend
   
   if(type == "bbox") {
     box@bbox      
   } else {
+    # str() function is helpful
     data.frame(box@polygons[[1]]@Polygons[[1]]@coords)
   }
 }
 
+# returns all trip on given day
 gtfs.trips <- function(gtfs, date = Sys.time()) {
   d <- trunc(date, "days")
 
@@ -79,7 +85,8 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   trips <- gtfs[["trips"]]
   stop.times <- gtfs[["stop_times"]]
   routes <- gtfs[["routes"]]
-  
+
+  # get list of services basend on calendar 
   services <- setdiff(
     union(
       calendar.dates[calendar.dates$date == d & calendar.dates$exception_type == 1, c("service_id")],
@@ -88,10 +95,12 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
     calendar.dates[calendar.dates$date == d & calendar.dates$exception_type == 2, c("service_id")]
   )
   
+  # services -> trips -> routes
   t <- trips[trips$service_id %in% services, c("trip_id")]
   r <- unique(trips[trips$service_id %in% services, c("trip_id", "route_id")])
   r <- merge(r, routes[, c("route_id", "route_type")], all.x = T)[, c("trip_id", "route_type")]
   
+  # arrival_time, and departure_time have hh24:mm:ss format and value can go over 24 hours
   ret <- within(stop.times[stop.times$trip_id %in% t, ], {
     trip_id <- trip_id
     shape_dist_traveled <- shape_dist_traveled
@@ -105,6 +114,7 @@ gtfs.trips <- function(gtfs, date = Sys.time()) {
   merge(ret, r, all.x = T)
 }
 
+# returns summary about all trips: distance, duration, number of stops, ...
 gtfs.trips.summary <- function(trips) {
   s <- trips[order(trips$trip_id, trips$stop_sequence), ]
   s$n <- 1:nrow(s)
@@ -158,6 +168,11 @@ gtfs.trips.summary <- function(trips) {
 #   }, .progress = "text")  
 }
 
+# returns aggregated shape data
+# route can have many trips
+# each trip has shape and shape can be different for each trip:
+# - one way streets
+# - early and late services have different starting terminal stops
 compute.segments <- function(shapes) {
   s <- shapes[order(shapes$shape_id, shapes$shape_pt_sequence), c("shape_pt_lat", "shape_pt_lon", "shape_dist_traveled")]
   s$n <- 1:nrow(s)
@@ -174,6 +189,7 @@ compute.segments <- function(shapes) {
   ss.agg
 }
 
+# 2d hexagonal binning
 compute.hex.bins <- function(x, xbnds, ybnds, lat.bin.width, lon.bin.width) {
   
   bins <- hexbin(
