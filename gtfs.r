@@ -193,28 +193,6 @@ compute.hex.bins <- function(x, xbnds, ybnds, lat.bin.width, lon.bin.width) {
   )
 }
 
-compute.headway <- function(x, trips) {
-  hw <- merge(
-    x,
-    trips[, c("route_id", "trip_id", "direction_id")],
-    all.x = T
-  )
-  hw$time2 <- with(hw,
-    truncDiffTime(min(arrival_time, na.rm  = T), arrival_time, 1) %% 86400
-  )
-  
-  hw <- ddply(hw, .(route_id, stop_id), function(x) {
-    summary(diff(unique(sort(x$time2))))
-  })
-  names(hw) <- c("route_id", "stop_id", "p0", "p25", "p50", "mean", "p75", "p100")
-
-  hw <- aggregate(p50 ~ stop_id, hw, "mean")
-
-  #hw <- hw[!is.na(hw$p100), ]  
-  #hw <- hw[hw$p100 > 0 & !is.na(hw$p100), ]  
-  hw
-}
-
 truncDate <- function(x, i = 900) {
   x - (as.double(x) %% i)
 }
